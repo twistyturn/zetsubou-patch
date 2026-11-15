@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zetsubou Patch for Danganronpa (Steam)</title>
+<meta name="description" content="Play the Steam version of Danganronpa: Trigger Happy Havoc with Project Zetsubou's 2013 fan translation. One download, a few clicks, about five minutes.">
+<meta name="color-scheme" content="light dark">
+<script>
+/* Runs early so the right platform is shown without a flicker. Without JavaScript, both platforms are shown. */
+(function () {
+  var d = document.documentElement, ua = navigator.userAgent || '', p = 'unknown';
+  var phone = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+  if (!phone) {
+    if (/Windows/i.test(ua)) p = 'win';
+    else if (/Linux|X11/i.test(ua) && !/CrOS/i.test(ua)) p = 'deck';
+  }
+  var h = (location.hash || '').toLowerCase();
+  if (h === '#windows') p = 'win';
+  if (h === '#deck') p = 'deck';
+  d.className += ' js' + (phone ? ' phone' : '');
+  d.setAttribute('data-platform', p);
+})();
+</script>
+<style>
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f4f3f5;
+  --ink: #111114;
+  --ink-soft: #4a4a55;
+  --line: #d9d8de;
+  --pink: #d6006f;
+  --pink-ink: #ffffff;
+  --pink-soft: #ffe3f1;
+  --card: #ffffff;
+  --mock-bg: #ffffff;
+  --mock-bar: #e9e8ee;
+  --mock-ink: #2a2a33;
+  --mock-dim: #b9b8c2;
+  --warn-bg: #2b3350;
+  --warn-ink: #ffffff;
+  --shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e0e11;
+    --bg-soft: #17171c;
+    --ink: #f5f4f7;
+    --ink-soft: #b7b6c2;
+    --line: #34343e;
+    --pink: #ff5aa8;
+    --pink-ink: #16000b;
+    --pink-soft: #3a1028;
+    --card: #17171c;
+    --mock-bg: #24242c;
+    --mock-bar: #31313b;
+    --mock-ink: #ecebf1;
+    --mock-dim: #5b5b68;
+    --warn-bg: #2f3860;
+    --warn-ink: #ffffff;
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.45);
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 19px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+a { color: var(--pink); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, summary:focus-visible {
+  outline: 3px solid var(--pink); outline-offset: 3px; border-radius: 6px;
+}
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+h1, h2, h3 { line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 1.8rem; margin-bottom: 20px; }
+p { margin: 0 0 14px; }
+section { padding: 52px 0; }
+section + section { border-top: 1px solid var(--line); }
+
+/* ---------- platform switching ---------- */
+.js[data-platform="win"] .only-deck,
+.js[data-platform="deck"] .only-win,
+.js[data-platform="win"] .only-unsure,
+.js[data-platform="deck"] .only-unsure { display: none !important; }
+.needs-js { display: none; }
+.js .needs-js { display: block; }
+.js .no-js-only { display: none; }
+
+/* ---------- hero ---------- */
+.hero { position: relative; overflow: hidden; padding: 0; border-bottom: 1px solid var(--line); }
+.stripe {
+  height: 14px;
+  background: repeating-linear-gradient(135deg, var(--ink) 0 18px, var(--pink) 18px 36px);
+}
+.hero .wrap { position: relative; padding-top: 56px; padding-bottom: 60px; }
+.deco { position: absolute; pointer-events: none; }
+.deco.a { right: -40px; top: 40px; width: 220px; height: 220px;
+  background-image: radial-gradient(var(--pink) 2.5px, transparent 3px); background-size: 18px 18px; opacity: .45; }
+.deco.b { right: 120px; top: 190px; width: 64px; height: 64px; background: var(--ink); transform: rotate(12deg); }
+.deco.c { right: 70px; top: 230px; width: 64px; height: 64px; border: 6px solid var(--pink); transform: rotate(-8deg); }
+.kicker {
+  display: inline-block; font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  background: var(--ink); color: var(--bg); padding: 5px 12px; margin-bottom: 18px;
+}
+h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); font-weight: 800; max-width: 14em; }
+h1 em { font-style: normal; color: var(--pink); }
+.lede { font-size: 1.25rem; max-width: 33em; margin: 20px 0 30px; color: var(--ink-soft); }
+.lede strong { color: var(--ink); }
+
+.phone-note {
+  display: none; background: var(--pink-soft); border-left: 6px solid var(--pink);
+  padding: 14px 18px; margin: 0 0 26px; border-radius: 0 10px 10px 0; font-size: 1.05rem;
+}
+.phone .phone-note { display: block; }
+@media (max-width: 700px) and (hover: none) and (pointer: coarse) { .phone-note { display: block; } }
+
+.switch { margin: 0 0 22px; }
+.switch-label { font-weight: 700; margin-bottom: 8px; display: block; }
+.seg { display: inline-flex; border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; max-width: 100%; }
+.seg button {
+  font: inherit; font-weight: 700; color: var(--ink); background: transparent; border: 0;
+  padding: 12px 22px; cursor: pointer; min-height: 52px;
+}
+.seg button + button { border-left: 2px solid var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button:focus-visible { outline-offset: -5px; }
+
+.dl-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: stretch; }
+.dl {
+  display: inline-flex; align-items: center; gap: 16px;
+  background: var(--pink); color: var(--pink-ink); text-decoration: none;
+  padding: 20px 30px; border-radius: 16px; font-weight: 800; font-size: 1.35rem; line-height: 1.2;
+  box-shadow: 6px 6px 0 var(--ink); transition: transform .08s ease, box-shadow .08s ease;
+}
+.dl:hover { transform: translate(2px, 2px); box-shadow: 4px 4px 0 var(--ink); }
+.dl:active { transform: translate(6px, 6px); box-shadow: 0 0 0 var(--ink); }
+.dl small { display: block; font-weight: 600; font-size: .85rem; opacity: .92; margin-top: 3px; }
+.dl svg { width: 34px; height: 34px; flex: none; }
+.dl-hint { margin-top: 20px; color: var(--ink-soft); font-size: 1rem; }
+
+/* ---------- what you need ---------- */
+.needs { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.needs li { background: var(--bg-soft); border-radius: 14px; padding: 20px; display: flex; gap: 14px; align-items: flex-start; }
+.needs svg { width: 32px; height: 32px; flex: none; color: var(--pink); margin-top: 2px; }
+.needs b { display: block; }
+.needs span { color: var(--ink-soft); font-size: .98rem; }
+
+/* ---------- steps ---------- */
+.platform-title { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.platform-title .tag { font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--pink); }
+.steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+.steps > li {
+  counter-increment: step; display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px; align-items: center; padding: 28px 0; border-top: 1px dashed var(--line);
+}
+.steps > li:first-child { border-top: 0; }
+.steps > li::before {
+  content: counter(step); align-self: start;
+  width: 56px; height: 56px; display: grid; place-items: center;
+  background: var(--ink); color: var(--bg); font-weight: 800; font-size: 1.6rem;
+  box-shadow: 5px 5px 0 var(--pink);
+}
+.step-text { align-self: start; padding-top: 12px; }
+.step-text h3 { font-size: 1.3rem; margin-bottom: 8px; }
+.step-text p { margin: 0 0 8px; }
+.step-text .aside { color: var(--ink-soft); font-size: .98rem; }
+.label { font-weight: 700; white-space: nowrap; }
+.w { white-space: normal; }
+
+/* ---------- illustrations (schematic, not screenshots) ---------- */
+.ill {
+  margin: 0; background: var(--bg-soft); border-radius: 16px; padding: 22px;
+  display: flex; gap: 14px; justify-content: center; align-items: center; flex-wrap: wrap;
+  font-size: 14px; line-height: 1.3; color: var(--mock-ink); min-height: 190px;
+}
+.ill svg { width: 22px; height: 22px; flex: none; }
+.win {
+  background: var(--mock-bg); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+  width: 100%; max-width: 330px; overflow: hidden;
+}
+.win .bar { background: var(--mock-bar); padding: 7px 12px; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.win .bar::after { content: ""; margin-left: auto; width: 34px; height: 8px;
+  background: radial-gradient(circle, var(--mock-dim) 3.5px, transparent 4px) 0 0 / 12px 8px repeat-x; }
+.win .body { padding: 12px; }
+.row { display: flex; align-items: center; gap: 10px; padding: 7px 9px; border-radius: 7px; }
+.row.dim { color: var(--mock-dim); }
+.row.dim i { display: block; height: 8px; border-radius: 4px; background: var(--mock-dim); opacity: .55; }
+.hl { outline: 3px solid var(--pink); outline-offset: 1px; background: var(--pink-soft); font-weight: 700; }
+.c-folder { color: #e2a100; }
+.c-zip { color: var(--pink); }
+.c-run { color: var(--pink); }
+.menu { background: var(--mock-bg); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); padding: 6px; width: 150px; }
+.menu .row { padding: 6px 9px; }
+.btn { display: inline-block; border: 1px solid var(--mock-dim); border-radius: 6px; padding: 6px 14px; font-weight: 600; background: var(--mock-bar); }
+.btn.hl { border-color: var(--pink); }
+.btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.warn { background: var(--warn-bg); color: var(--warn-ink); border-radius: 6px; padding: 14px; width: 100%; max-width: 210px; box-shadow: var(--shadow); }
+.warn b { display: block; font-size: 15px; margin-bottom: 6px; }
+.warn .l { display: block; height: 7px; border-radius: 4px; background: rgba(255,255,255,.35); margin: 6px 0; }
+.warn .link { display: inline-block; text-decoration: underline; padding: 2px 5px; border-radius: 4px; margin-top: 2px; }
+.warn .link.hl, .warn .btn.hl { background: #fff; color: #16000b; outline-color: #ff5aa8; border-color: #ff5aa8; }
+.warn .btn { background: transparent; border-color: rgba(255,255,255,.7); color: #fff; }
+.ill.col { flex-direction: column; flex-wrap: nowrap; gap: 6px; }
+.ill.col .warn { max-width: 250px; }
+.ill.col .btn { white-space: nowrap; }
+.arrow { font-size: 26px; font-weight: 800; color: var(--pink); }
+.caption { flex-basis: 100%; text-align: center; font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+.prog { height: 14px; border-radius: 7px; background: var(--mock-bar); overflow: hidden; margin: 10px 0 6px; }
+.prog i { display: block; height: 100%; width: 62%; background: var(--pink); border-radius: 7px; }
+.done { text-align: center; padding: 6px 0 2px; }
+.done .tick { width: 44px; height: 44px; border-radius: 50%; background: var(--pink); color: var(--pink-ink); display: grid; place-items: center; margin: 0 auto 8px; }
+.done .tick svg { width: 26px; height: 26px; }
+.done b { font-size: 18px; display: block; }
+.pill { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 9px 18px; font-weight: 700; background: var(--mock-bg); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.pill.play { background: var(--pink); color: var(--pink-ink); border-color: transparent; }
+.stack { display: grid; gap: 8px; justify-items: stretch; width: 100%; max-width: 250px; }
+.desk-icon { display: grid; justify-items: center; gap: 6px; padding: 10px 12px; border-radius: 10px; text-align: center; font-weight: 700; max-width: 150px; }
+.desk-icon svg { width: 40px; height: 40px; }
+
+/* ---------- tip, undo, help ---------- */
+.tip {
+  background: var(--pink-soft); border: 2px solid var(--pink); border-radius: 18px; padding: 26px 28px;
+  display: grid; grid-template-columns: 56px 1fr; gap: 20px; align-items: start;
+}
+.tip svg { width: 52px; height: 52px; color: var(--pink); }
+.tip h2 { font-size: 1.45rem; margin-bottom: 8px; }
+.tip p:last-child { margin-bottom: 0; }
+.reassure { background: var(--bg-soft); border-radius: 14px; padding: 20px 22px; margin-bottom: 26px; font-size: 1.08rem; }
+.qa { margin: 0; }
+.qa dt { font-weight: 700; margin-top: 20px; }
+.qa dd { margin: 4px 0 0; color: var(--ink-soft); }
+details { border: 1px solid var(--line); border-radius: 14px; background: var(--card); margin-bottom: 14px; }
+summary { cursor: pointer; font-weight: 700; font-size: 1.15rem; padding: 18px 22px; list-style-position: outside; margin-left: 0; }
+details > div { padding: 0 22px 20px; }
+details ul { padding-left: 1.2em; margin: 0; }
+details li { margin-bottom: 10px; }
+footer { padding: 36px 0 60px; color: var(--ink-soft); font-size: .95rem; border-top: 1px solid var(--line); }
+
+@media (max-width: 760px) {
+  body { font-size: 18px; }
+  .wrap { padding: 0 18px; }
+  section { padding: 40px 0; }
+  .hero .wrap { padding-top: 40px; padding-bottom: 44px; }
+  .deco.b, .deco.c { display: none; }
+  .deco.a { display: none; }
+  .step-text { padding-top: 6px; }
+  .needs { grid-template-columns: 1fr; }
+  .steps > li { grid-template-columns: 48px minmax(0, 1fr); gap: 14px 16px; }
+  .steps > li::before { width: 44px; height: 44px; font-size: 1.3rem; box-shadow: 4px 4px 0 var(--pink); }
+  .steps .ill { grid-column: 1 / -1; }
+  .dl { width: 100%; font-size: 1.2rem; padding: 18px 20px; }
+  .seg { display: flex; }
+  .seg button { flex: 1; padding: 12px 10px; }
+  .tip { grid-template-columns: 1fr; }
+  .tip svg { width: 40px; height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .dl { transition: none; } }
+</style>
+</head>
+<body>
+
+<!-- Shared icon shapes (original, generic) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M2 6a2 2 0 0 1 2-2h5l2 2.5h9a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z" fill="currentColor"/></symbol>
+    <symbol id="i-zip" viewBox="0 0 24 24"><path d="M5 2h10l4 4v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="currentColor"/><path d="M10 4h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2z" fill="#fff"/></symbol>
+    <symbol id="i-run" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="3" fill="currentColor"/><path d="M10 8.5v7l6-3.5z" fill="#fff"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="3" fill="currentColor"/><path d="M9 9l-3 3 3 3M6.5 12H14a3 3 0 0 1 0 6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1 -2.5)"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-game" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M7 10.5v4M5 12.5h4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="11" r="1.4" fill="currentColor"/><circle cx="18.2" cy="14" r="1.4" fill="currentColor"/></symbol>
+    <symbol id="i-disk" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M3 14h18" stroke="currentColor" stroke-width="2.2"/><circle cx="17" cy="16.6" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 7v5.5l3.5 2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-voice" viewBox="0 0 24 24"><path d="M4 5h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M8 9.5v3M12 8v6M16 9.5v3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></symbol>
+    <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8M6.5 6.5a8 8 0 1 0 11 0" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-return" viewBox="0 0 24 24"><path d="M9 7l-5 5 5 5M4 12h11a5 5 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -3)"/></symbol>
+  </defs>
+</svg>
+
+<header class="hero">
+  <div class="stripe" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="deco a" aria-hidden="true"></div>
+    <div class="deco b" aria-hidden="true"></div>
+    <div class="deco c" aria-hidden="true"></div>
+
+    <span class="kicker">Fan translation patch</span>
+    <h1>Zetsubou Patch for <em>Danganronpa</em> on Steam</h1>
+    <p class="lede">Play the Steam version of <strong>Danganronpa: Trigger Happy Havoc</strong> with <strong>Project Zetsubou's 2013 fan translation</strong>: Super Duper High School students, Hope's Peak Academy, the ElectroiD and all.</p>
+
+    <p class="phone-note" role="note"><strong>On your phone right now?</strong> Open this page on the computer or Steam Deck where you play, and download it there. You can read the steps here first.</p>
+
+    <div class="switch needs-js">
+      <span class="switch-label" id="switch-label">I play on:</span>
+      <div class="seg" role="group" aria-labelledby="switch-label">
+        <button type="button" data-set="win" aria-pressed="false">Windows PC</button>
+        <button type="button" data-set="deck" aria-pressed="false">Steam Deck</button>
+      </div>
+    </div>
+
+    <div class="dl-row">
+      <a class="dl only-win" href="downloads/Zetsubou-Patch-DR1-Windows-v1.0.zip">
+        <svg aria-hidden="true"><use href="#i-down"/></svg>
+        <span>Download for Windows PC<small>Free &middot; version 1.0 &middot; one zip file</small></span>
+      </a>
+      <a class="dl only-deck" href="downloads/Zetsubou-Patch-DR1-Deck-v1.0.zip">
+        <svg aria-hidden="true"><use href="#i-down"/></svg>
+        <span>Download for Steam Deck<small>Free &middot; version 1.0 &middot; one zip file</small></span>
+      </a>
+    </div>
+    <p class="dl-hint only-unsure">Pick the one that matches where you play. The steps for both are below.</p>
+    <p class="dl-hint">The download contains only translated text and lettering. It never includes the game itself, so you need your own copy on Steam.</p>
+  </div>
+</header>
+
+<main>
+
+
+<!-- ======================= WINDOWS ======================= -->
+<section class="only-win" id="windows" aria-labelledby="win-h">
+  <div class="wrap">
+    <div class="platform-title"><h2 id="win-h">How to install on a Windows PC</h2><span class="tag">7 small steps</span></div>
+    <ol class="steps">
+
+      <li>
+        <div class="step-text">
+          <h3>Download the patch</h3>
+          <p>Click <a href="downloads/Zetsubou-Patch-DR1-Windows-v1.0.zip">Download for Windows PC</a>. The file lands in your <span class="label">Downloads</span> folder.</p>
+        </div>
+        <figure class="ill" role="img" aria-label="Illustration: a Downloads folder with the patch zip file highlighted.">
+          <div class="win" aria-hidden="true">
+            <div class="bar"><svg class="c-folder"><use href="#i-folder"/></svg>Downloads</div>
+            <div class="body">
+              <div class="row hl"><svg class="c-zip"><use href="#i-zip"/></svg><span class="w">Zetsubou-Patch-DR1-Windows-v1.0</span></div>
+              <div class="row dim"><svg><use href="#i-zip"/></svg><i style="width:55%"></i></div>
+              <div class="row dim"><svg><use href="#i-folder"/></svg><i style="width:40%"></i></div>
+            </div>
+          </div>
+        </figure>
+      </li>
+
+      <li>
+        <div class="step-text">
+          <h3>Unpack it</h3>
+          <p>Right-click the zip file, choose <span class="label">Extract All...</span>, then click <span class="label">Extract</span>.</p>
+          <p class="aside">This step matters: the installer can't run from inside the zip.</p>
+        </div>
+        <figure class="ill" role="img" aria-label="Illustration: a right-click menu on the zip file with Extract All highlighted, followed by an Extract button.">
+          <div class="menu" aria-hidden="true">
+            <div class="row dim"><i style="width:60px"></i></div>
+            <div class="row hl">Extract All...</div>
+            <div class="row dim"><i style="width:90px"></i></div>
+            <div class="row dim"><i style="width:70px"></i></div>
+          </div>
+          <span class="arrow" aria-hidden="true">&rarr;</span>
+          <span class="btn hl" aria-hidden="true">Extract</span>
+        </figure>
+      </li>
+
+      <li>
+        <div class="step-text">
+          <h3>Open the new folder and double-click the installer</h3>
+          <p>The folder is called <span class="label w">Zetsubou Patch for Danganronpa (Windows)</span>. Inside, double-click <span class="label">Install Zetsubou Patch</span>.</p>
+          <p class="aside">If the game is open, close it first.</p>
+        </div>
+        <figure class="ill" role="img" aria-label="Illustration: the unpacked folder, with the file Install Zetsubou Patch highlighted.">
+          <div class="win" aria-hidden="true">
+            <div class="bar"><svg class="c-folder"><use href="#i-folder"/></svg><span class="w">Zetsubou Patch for Danganronpa (Windows)</span></div>
+            <div class="body">
+              <div class="row hl"><svg class="c-run"><use href="#i-run"/></svg>Install Zetsubou Patch</div>
+              <div class="row"><svg style="color:var(--mock-dim)"><use href="#i-back"/></svg>Restore Original Game</div>
+              <div class="row dim"><svg><use href="#i-folder"/></svg><i style="width:30%"></i></div>
+              <div class="row dim"><svg><use href="#i-zip"/></svg><i style="width:45%"></i></div>
+            </div>
+          </div>
+        </figure>
+      </li>
+
+      <li>
+        <div class="step-text">
+          <h3>Tell Windows it's okay</h3>
+          <p>Windows will show a warning like this. That's normal for downloads; click <span class="label">More info</span>, then <span class="label">Run anyway</span>.</p>
+          <p class="aside">If you get a smaller box with a <span class="label">Run</span> button instead, click <span class="label">Run</span>.</p>
+        </div>
+        <figure class="ill col" role="img" aria-label="Illustration: a simplified warning box. First the More info link is highlighted, then the Run anyway button.">
+          <div class="warn" aria-hidden="true">
+            <b>Windows protected your PC</b>
+            <span class="l" style="width:95%"></span><span class="l" style="width:70%"></span>
+            <span class="link hl">More info</span>
+            <div class="btns"><span class="btn">Don't run</span></div>
+          </div>
+          <span class="arrow" aria-hidden="true">&darr;</span>
+          <div class="warn" aria-hidden="true">
+            <b>Windows protected your PC</b>
+            <span class="l" style="width:95%"></span><span class="l" style="width:55%"></span>
+            <div class="btns"><span class="btn hl">Run anyway</span><span class="btn">Don't run</span></div>
+          </div>
+          <span class="caption" aria-hidden="true">Simplified drawing. Yours will look a little different.</span>
+        </figure>
+      </li>
+
+      <li>
+        <div class="step-text">
+          <h3>Wait a few minutes</h3>
+          <p>A small window with a progress bar appears. Let it work; you don't need to do anything.</p>
+        </div>
+        <figure class="ill" role="img" aria-label="Illustration: a small installer window with a progress bar partly filled.">
+          <div class="win" aria-hidden="true" style="max-width:290px">
+            <div class="bar">Zetsubou Patch</div>
+            <div class="body">
+              <div>Installing the translation...</div>
+              <div class="prog"><i></i></div>
+              <div style="color:var(--ink-soft);font-size:12.5px">This takes a few minutes.</div>
+            </div>
+          </div>
+        </figure>
+      </li>
+
+      <li>
+        <div class="step-text">
+          <h3>See "Done!" and click OK</h3>
+          <p>When the message says <span class="label">Done!</span>, click <span class="label">OK</span>. That's the whole installation.</p>
+        </div>
+        <figure class="ill" role="img" aria-label="Illustration: a message box that says Done, with an OK button highlighted.">
+          <div class="win" aria-hidden="true" style="max-width:250px">
+            <div class="bar">Zetsubou Patch</div>
+            <div class="body">
+              <div class="done"><div class="tick"><svg><use href="#i-check"/></svg></div><b>Done!</b></div>
+              <div class="btns" style="justify-content:center"><span class="btn hl">OK</span></div>
+            </div>
+          </div>
+        </figure>
+      </li>
+
+      <li>
+        <div class="step-text">
+          <h3>Start the game from Steam</h3>
+          <p>Open Steam and press <span class="label">Play</span>, just like always.</p>
+        </div>
+        <figure class="ill" role="img" aria-label="Illustration: the game in a library list with a Play button.">
+          <div class="win" aria-hidden="true" style="max-width:300px">
+            <div class="bar">Library</div>
+            <div class="body" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <b class="w">Danganronpa: Trigger Happy Havoc</b>
+              <span class="pill play"><svg style="width:16px;height:16px"><use href="#i-play"/></svg>Play</span>
+            </div>
+          </div>
+        </figure>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ======================= STEAM DECK ======================= -->
+<section class="only-deck" id="deck" aria-labelledby="deck-h">
+  <div class="wrap">
+    <div class="platform-title"><h2 id="deck-h">How to install on a Steam Deck</h2><span class="tag">6 small steps</span></div>
+    <ol class="steps">
+
+      <li>
+        <div class="step-text">
+          <h3>Switch to Desktop Mode</h3>
+          <p>Press the <span class="label">STEAM</span> button, then choose <span class="label">Power</span>, then <span class="label">Switch to Desktop</span>.</p>
+        </div>
+        <figure class="ill" role="img" aria-label="Illustration: a menu path. STEAM, then Power, then Switch to Desktop, highlighted.">
+          <div class="stack" aria-hidden="true">
+            <span class="pill">STEAM button</span>
+            <span class="pill"><svg style="width:18px;height:18px"><use href="#i-power"/></svg>Power</span>
+            <span class="pill hl">Switch to Desktop</span>
+          </div>
+        </figure>
+      </li>
+
+      <li>
+        <div class="step-text">
+          <h3>Download the patch on the Deck</h3>
+          <p>Open this page in the Deck's web browser and click <a href="downloads/Zetsubou-Patch-DR1-Deck-v1.0.zip">Download for Steam Deck</a>. The file lands in <span class="label">Downloads</span>.</p>
+        </div>
+        <figure class="ill" role="img" aria-label="Illustration: a Downloads folder with the patch zip file highlighted.">
+          <div class="win" aria-hidden="true">
+            <div class="bar"><svg class="c-folder"><use href="#i-folder"/></svg>Downloads</div>
+            <div class="body">
+              <div class="row hl"><svg class="c-zip"><use href="#i-zip"/></svg><span class="w">Zetsubou-Patch-DR1-Deck-v1.0</span></div>
+              <div class="row dim"><svg><use href="#i-zip"/></svg><i style="width:55%"></i></div>
+              <div class="row dim"><svg><use href="#i-folder"/></svg><i style="width:40%"></i></div>
+            </div>
+          </div>
+        </figure>
+      </li>
+
+      <li>
+        <div class="step-text">
+          <h3>Unpack it</h3>
+          <p>Open the file manager (the blue folder icon in the taskbar) and go to <span class="label">Downloads</span>. Right-click the zip file and choose <span class="label">Extract</span>, then <span class="label">Extract archive here</span>.</p>
+          <p class="aside">No mouse? Pressing the left trigger works as a right-click.</p>
+        </div>
+        <figure class="ill col" role="img" aria-label="Illustration: a right-click menu with Extract highlighted, followed by Extract archive here.">
+          <div class="menu" aria-hidden="true">
+            <div class="row dim"><i style="width:60px"></i></div>
+            <div class="row hl">Extract</div>
+            <div class="row dim"><i style="width:90px"></i></div>
+          </div>
+          <span class="arrow" aria-hidden="true">&darr;</span>
+          <div class="menu" aria-hidden="true" style="width:170px">
+            <div class="row hl">Extract archive here</div>
+            <div class="row dim"><i style="width:80px"></i></div>
+          </div>
+        </figure>
+      </li>
+
+      <li>
+        <div class="step-text">
+          <h3>Open the new folder and double-click the installer</h3>
+          <p>The folder is called <span class="label w">Zetsubou Patch for Danganronpa</span>. Inside, double-click <span class="label">Install Zetsubou Patch</span>. If the Deck asks whether to run it, choose <span class="label">Execute</span> or <span class="label">Continue</span>.</p>
+          <p class="aside">If it opens as a page of text instead, the "README" file in the same folder shows the fix (ticking "Is executable").</p>
+        </div>
+        <figure class="ill" role="img" aria-label="Illustration: the unpacked folder, with the file Install Zetsubou Patch highlighted.">
+          <div class="win" aria-hidden="true">
+            <div class="bar"><svg class="c-folder"><use href="#i-folder"/></svg><span class="w">Zetsubou Patch for Danganronpa</span></div>
+            <div class="body">
+              <div class="row hl"><svg class="c-run"><use href="#i-run"/></svg>Install Zetsubou Patch</div>
+              <div class="row"><svg style="color:var(--mock-dim)"><use href="#i-back"/></svg>Restore Original Game</div>
+              <div class="row"><svg style="color:var(--mock-dim)"><use href="#i-zip"/></svg>README</div>
+              <div class="row dim"><svg><use href="#i-folder"/></svg><i style="width:30%"></i></div>
+            </div>
+          </div>
+        </figure>
+      </li>
+
+      <li>
+        <div class="step-text">
+          <h3>Wait for "Done!"</h3>
+          <p>A window shows the progress. It takes a few minutes. When it says <span class="label">Done!</span>, close the window.</p>
+        </div>
+        <figure class="ill" role="img" aria-label="Illustration: an installer window with a progress bar, then a message that says Done.">
+          <div class="win" aria-hidden="true" style="max-width:140px">
+            <div class="bar">Zetsubou Patch</div>
+            <div class="body"><div>Installing...</div><div class="prog"><i></i></div></div>
+          </div>
+          <span class="arrow" aria-hidden="true">&rarr;</span>
+          <div class="win" aria-hidden="true" style="max-width:100px">
+            <div class="body"><div class="done"><div class="tick"><svg><use href="#i-check"/></svg></div><b>Done!</b></div></div>
+          </div>
+        </figure>
+      </li>
+
+      <li>
+        <div class="step-text">
+          <h3>Go back and play</h3>
+          <p>Double-click <span class="label">Return to Gaming Mode</span> on the desktop, then start Danganronpa as usual.</p>
+        </div>
+        <figure class="ill" role="img" aria-label="Illustration: a desktop icon labelled Return to Gaming Mode, then a Play button.">
+          <div class="desk-icon hl" aria-hidden="true"><svg style="color:var(--pink)"><use href="#i-return"/></svg>Return to Gaming Mode</div>
+          <span class="arrow" aria-hidden="true">&rarr;</span>
+          <span class="pill play" aria-hidden="true"><svg style="width:16px;height:16px"><use href="#i-play"/></svg>Play</span>
+        </figure>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section aria-labelledby="tip-h">
+  <div class="wrap">
+    <div class="tip">
+      <svg aria-hidden="true"><use href="#i-voice"/></svg>
+      <div>
+        <h2 id="tip-h">One tip: set the voices to Japanese</h2>
+        <p>In the game's <strong>Options</strong>, switch the voices to <strong>Japanese</strong>. Project Zetsubou translated from the Japanese, so the words on screen match what you hear.</p>
+        <p>The English voices were recorded for the official translation, so with them the spoken lines often won't match the text.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="undo-h">
+  <div class="wrap">
+    <h2 id="undo-h">Changed your mind?</h2>
+    <p>Open the patch folder again and double-click <strong>Restore Original Game</strong>. The installer kept a copy of the original and puts it back. Your saves are fine either way.</p>
+    <p style="color:var(--ink-soft)">Steam can undo it too: right-click the game in your Library, then <strong>Properties</strong> &rarr; <strong>Installed Files</strong> &rarr; <strong>Verify integrity of game files</strong>.</p>
+  </div>
+</section>
+
+<section aria-labelledby="help-h">
+  <div class="wrap">
+    <h2 id="help-h">If something goes wrong</h2>
+    <p class="reassure"><strong>You can't break your game with this.</strong> The installer checks everything before it changes anything. If a check fails, your game is left exactly as it was, and the message tells you what to do.</p>
+    <dl class="qa">
+      <dt>It says "Danganronpa is running".</dt>
+      <dd>Close the game, then double-click the installer again.</dd>
+      <dt>It says the game "isn't the official Steam version".</dt>
+      <dd>Another mod may be installed. In Steam, right-click the game, then Properties &rarr; Installed Files &rarr; Verify integrity of game files. When Steam has finished, run the installer again.</dd>
+      <dt>It says "Not enough free space".</dt>
+      <dd>Free up about 1.5 GB on the drive where the game is installed, then try again.</dd>
+      <dt>Nothing happens when I double-click the installer.</dt>
+      <dd>Make sure you unpacked the zip first (step 2 on Windows, step 3 on Steam Deck). If it still won't start, the "README" file in the patch folder has one more thing to try.</dd>
+    </dl>
+  </div>
+</section>
+
+<section aria-labelledby="more-h">
+  <div class="wrap">
+    <h2 id="more-h">More about the patch</h2>
+
+    <details>
+      <summary>What does the patch change?</summary>
+      <div>
+        <ul>
+          <li><strong>The translation is Project Zetsubou's</strong>, carried over line by line, with a small number of fixes: slurs and stereotypes the translation added that aren't in the Japanese, a few misreadings, and a few lost puns.</li>
+          <li><strong>Names and terms</strong> follow Zetsubou everywhere: Kyouko, Touko, Oowada, Oogami, Celes, Genocider Shou, Super Duper High School, ElectroiD, Ammunition, Epiphany Anagram, Machinegun Talk Battle, Climax Logic.</li>
+          <li><strong>On-screen lettering</strong> was redone to match: chapter titles, student intro cards, name tags, the School Rules pages, door nameplates and more. The new lettering is painted onto your own copy of the game when you install.</li>
+          <li><strong>Epiphany Anagram</strong> puzzles are adjusted so Zetsubou's answers fit.</li>
+          <li><strong>The opening movie</strong> that plays every time the game starts is cut to about three seconds, because it can't be skipped with a controller on the Steam Deck.</li>
+          <li>Parts the Steam version added (School Mode and a few extras) keep the official English text, with names and terms matched.</li>
+          <li>Button instructions keep the official text, so the prompts are always right for your controller or keyboard.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Credits</summary>
+      <div>
+        <ul>
+          <li><strong>Translation:</strong> Project Zetsubou (2013), from the translation text they published.</li>
+          <li><strong>Bringing it to the Steam version:</strong> this project.</li>
+          <li>The Windows download includes the official Python 3.12 embeddable package (Python Software Foundation License). Both downloads include two small video tools from libvpx 1.15.2 (BSD license), used to re-letter two videos.</li>
+        </ul>
+        <p style="margin-top:14px">This is a fan project. It isn't affiliated with or endorsed by Spike Chunsoft, NIS America, or Project Zetsubou. Please support the official release.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>A fan project, not affiliated with or endorsed by Spike Chunsoft, NIS America, or Project Zetsubou. The patch contains only translated text and lettering, never the game's own files. Please support the official release.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var d = document.documentElement;
+  var buttons = document.querySelectorAll('[data-set]');
+  function show(p) {
+    d.setAttribute('data-platform', p);
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute('aria-pressed', buttons[i].getAttribute('data-set') === p ? 'true' : 'false');
+    }
+  }
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].addEventListener('click', function () { show(this.getAttribute('data-set')); });
+  }
+  show(d.getAttribute('data-platform') || 'unknown');
+})();
+</script>
+</body>
+</html>
